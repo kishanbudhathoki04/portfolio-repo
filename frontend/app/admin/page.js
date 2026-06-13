@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 
 export default function AdminPage() {
   const [token, setToken] = useState(null);
-  
+
   // Auth states
-  const [email, setEmail] = useState("kishanbudhathoki04@gmail.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [viewState, setViewState] = useState("login"); // 'login', 'forgot', 'reset'
-  const [otp, setOtp] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [authMsg, setAuthMsg] = useState("");
   const [authMsgType, setAuthMsgType] = useState("error"); // error, success
@@ -47,6 +47,15 @@ export default function AdminPage() {
     const storedToken = localStorage.getItem("admin_token");
     if (storedToken) {
       setToken(storedToken);
+    }
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const rt = params.get('resetToken');
+      if (rt) {
+        setResetToken(rt);
+        setViewState('reset');
+      }
     }
   }, []);
 
@@ -122,11 +131,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setAuthMsgType("success");
-        setAuthMsg("If an account exists, a 6-digit OTP was sent to your email.");
-        setTimeout(() => {
-          setViewState("reset");
-          setAuthMsg("");
-        }, 1500);
+        setAuthMsg("If an account exists, a reset link was sent to your email.");
       } else {
         setAuthMsgType("error");
         setAuthMsg(data.error || "Failed to send reset link.");
@@ -144,7 +149,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp, newPassword })
+        body: JSON.stringify({ token: resetToken, newPassword })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -569,32 +574,32 @@ export default function AdminPage() {
                 <label className="form-label">Passphrase</label>
                 <input type="password" className="form-input" placeholder="Enter admin password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 {authMsg && (
-                  <div className="error-msg" style={{color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)'}}>
+                  <div className="error-msg" style={{ color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                     <span>{authMsgType === 'success' ? '✅' : '⚠️'}</span> {authMsg}
                   </div>
                 )}
               </div>
               <button type="submit" className="btn-login">DECRYPT ACCESS DECK</button>
-              <div style={{textAlign: 'center', marginTop: '16px'}}>
-                <button type="button" onClick={() => { setViewState('forgot'); setAuthMsg(''); }} style={{background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline'}}>Forgot Passphrase?</button>
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button type="button" onClick={() => { setViewState('forgot'); setAuthMsg(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}>Forgot Passphrase?</button>
               </div>
             </form>
           )}
-          
+
           {viewState === 'forgot' && (
             <form onSubmit={handleForgotPassword}>
               <div className="form-group">
                 <label className="form-label">Account Email</label>
                 <input type="email" className="form-input" placeholder="Enter registered email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 {authMsg && (
-                  <div className="error-msg" style={{color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)'}}>
+                  <div className="error-msg" style={{ color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                     <span>{authMsgType === 'success' ? '✅' : '⚠️'}</span> {authMsg}
                   </div>
                 )}
               </div>
               <button type="submit" className="btn-login">SEND RESET THREAD</button>
-              <div style={{textAlign: 'center', marginTop: '16px'}}>
-                <button type="button" onClick={() => { setViewState('login'); setAuthMsg(''); }} style={{background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline'}}>Return</button>
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button type="button" onClick={() => { setViewState('login'); setAuthMsg(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}>Return</button>
               </div>
             </form>
           )}
@@ -602,14 +607,10 @@ export default function AdminPage() {
           {viewState === 'reset' && (
             <form onSubmit={handleResetPassword}>
               <div className="form-group">
-                <label className="form-label">6-Digit OTP</label>
-                <input type="text" className="form-input" placeholder="Enter OTP from email" value={otp} onChange={(e) => setOtp(e.target.value)} required minLength={6} maxLength={6} style={{letterSpacing: '4px', textAlign: 'center', fontSize: '1.2rem', fontFamily: 'monospace'}} />
-              </div>
-              <div className="form-group">
                 <label className="form-label">New Passphrase</label>
                 <input type="password" className="form-input" placeholder="Define new secure key" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} />
                 {authMsg && (
-                  <div className="error-msg" style={{color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)'}}>
+                  <div className="error-msg" style={{ color: authMsgType === 'success' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                     <span>{authMsgType === 'success' ? '✅' : '⚠️'}</span> {authMsg}
                   </div>
                 )}

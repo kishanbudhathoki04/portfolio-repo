@@ -12,7 +12,7 @@ export class AdminService implements OnModuleInit {
   constructor(
     private readonly dbService: DbService,
     private readonly jwtService: JwtService
-  ) {}
+  ) { }
 
   async onModuleInit() {
     this.setupMailer();
@@ -39,7 +39,7 @@ export class AdminService implements OnModuleInit {
   private async seedDefaultAdmin() {
     const db = await this.dbService.readDB();
     if (!db.adminUser) {
-      console.log('Seeding default admin user: kishanbudhathoki04@gmail.com');
+      console.log('Seeding default admin user:');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       db.adminUser = {
         email: 'kishanbudhathoki04@gmail.com',
@@ -82,29 +82,31 @@ export class AdminService implements OnModuleInit {
       return true;
     }
 
-    const rawOtp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-    const hashedOtp = await bcrypt.hash(rawOtp, 10);
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
 
-    // OTP expires in 15 minutes
-    const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    // Token expires in 1 hour
+    const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
-    admin.resetToken = hashedOtp;
+    admin.resetToken = hashedToken;
     admin.resetTokenExpiry = tokenExpiry.toISOString();
-    
+
     db.adminUser = admin;
     await this.dbService.writeDB(db);
+
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin?resetToken=${rawToken}`;
 
     if (this.transporter) {
       const mailOptions = {
         from: `Admin Portal <${process.env.SMTP_USER}>`,
         to: email,
-        subject: 'Password Reset OTP',
-        text: `You requested a password reset. Here is your 6-digit OTP: \n\n${rawOtp}\n\nThis OTP will expire in 15 minutes.`,
+        subject: 'Password Reset Request',
+        text: `You requested a password reset. Please click on the link to reset your password: \n\n${resetLink}\n\nThis link will expire in 1 hour.`,
       };
 
       try {
         await this.transporter.sendMail(mailOptions);
-        console.log(`[Mailer] Reset OTP successfully sent to ${email}`);
+        console.log(`[Mailer] Reset email successfully sent to ${email}`);
       } catch (err) {
         console.error('[Mailer] Error sending email:', err.message);
         throw new InternalServerErrorException('Failed to send reset email');
@@ -112,29 +114,29 @@ export class AdminService implements OnModuleInit {
     } else {
       console.log(`\n==============================================`);
       console.log(`[MOCK EMAIL SENT TO ${email}]`);
-      console.log(`Password reset OTP: ${rawOtp}`);
+      console.log(`Password reset link: ${resetLink}`);
       console.log(`==============================================\n`);
     }
 
     return true;
   }
 
-  async resetPassword(otp: string, newPass: string): Promise<boolean> {
+  async resetPassword(token: string, newPass: string): Promise<boolean> {
     const db = await this.dbService.readDB();
     const admin = db.adminUser;
 
     if (!admin || !admin.resetToken || !admin.resetTokenExpiry) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
-    const isMatch = await bcrypt.compare(otp, admin.resetToken);
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+    if (admin.resetToken !== hashedToken) {
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
     if (new Date() > new Date(admin.resetTokenExpiry)) {
-      throw new UnauthorizedException('OTP has expired');
+      throw new UnauthorizedException('Token has expired');
     }
 
     // Success, reset the password

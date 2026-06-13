@@ -16,8 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: 'QA Portfolio | Quality Assurance Engineer',
-  description: 'Professional portfolio of a Quality Assurance Engineer specializing in Manual and API Testing, working at Synthbit Technology. Explore interactive API tests and bug-finding demos.',
+  title: 'Kishan Budhathoki | Quality Assurance',
+  description: 'Professional Quality Assurance Engineer',
 };
 
 export default function RootLayout({ children }) {
