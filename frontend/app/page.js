@@ -1,6 +1,11 @@
 import ClientHome from './ClientHome';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
+  if (process.env.APP_MODE === 'cms') {
+    redirect('/admin');
+  }
+
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
   
   let profileData = null;
