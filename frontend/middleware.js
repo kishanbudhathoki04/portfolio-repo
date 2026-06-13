@@ -29,8 +29,7 @@ export function middleware(request) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  // Exclude API routes, next static files, images, etc. from triggering this middleware entirely
   matcher: [
-    '/((?!api|_next/static|_next/image|_next/data|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|_next/data|uploads|favicon.ico).*)',
   ],
 };
