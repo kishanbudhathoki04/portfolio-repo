@@ -8,6 +8,7 @@ import { ExperienceModule } from './experience/experience.module';
 import { AdminModule } from './admin/admin.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ContactModule } from './contact/contact.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,5 +28,6 @@ import { ContactModule } from './contact/contact.module';
     ProjectsModule,
     ContactModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
