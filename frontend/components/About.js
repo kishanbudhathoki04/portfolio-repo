@@ -25,6 +25,8 @@ export default function About({ profileData }) {
                   src={profileData?.photo || '/avatar.jpg'}
                   alt={profileData?.name || 'Kishan Budhathoki'}
                   className="profile-avatar-img"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span
                   className="profile-avatar-online"

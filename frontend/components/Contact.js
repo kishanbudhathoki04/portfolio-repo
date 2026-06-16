@@ -116,6 +116,7 @@ export default function Contact() {
               <div className="form-group">
                 <label htmlFor="ticket-severity">Severity Level</label>
                 <CustomSelect 
+                  id="ticket-severity"
                   options={severityOptions} 
                   value={severity} 
                   onChange={setSeverity} 
@@ -124,6 +125,7 @@ export default function Contact() {
               <div className="form-group">
                 <label htmlFor="ticket-type">Issue Type</label>
                 <CustomSelect 
+                  id="ticket-type"
                   options={typeOptions} 
                   value={type} 
                   onChange={setType} 
