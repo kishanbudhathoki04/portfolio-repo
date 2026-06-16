@@ -1163,7 +1163,7 @@ export default function AdminPage() {
                         ...prev,
                         meta: { ...prev.meta, available: e.target.checked }
                       }))}
-                      style={{ width: '20px', height: '20px' }}
+                      style={{ width: '20px', height: '20px', appearance: 'auto', WebkitAppearance: 'auto' }}
                     />
                     <span style={{ color: profile.meta?.available ? 'var(--accent-green)' : 'var(--text-dim)' }}>
                       {profile.meta?.available ? 'Available (Online)' : 'Unavailable (Busy)'}
