@@ -74,6 +74,8 @@ ul, ol { list-style: none; }
 button, input, textarea, select {
   font-family: inherit;
   font-size: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* ─────────────────────────────────────────
@@ -405,6 +407,7 @@ header {
 .hero-section {
   padding-top: 68px;         /* offset for fixed nav */
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   position: relative;
