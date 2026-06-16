@@ -117,6 +117,7 @@ export default function Contact() {
                 <label htmlFor="ticket-severity">Severity Level</label>
                 <CustomSelect 
                   id="ticket-severity"
+                  ariaLabel="Severity Level"
                   options={severityOptions} 
                   value={severity} 
                   onChange={setSeverity} 
@@ -126,6 +127,7 @@ export default function Contact() {
                 <label htmlFor="ticket-type">Issue Type</label>
                 <CustomSelect 
                   id="ticket-type"
+                  ariaLabel="Issue Type"
                   options={typeOptions} 
                   value={type} 
                   onChange={setType} 

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function CustomSelect({ options, value, onChange, className = "", id }) {
+export default function CustomSelect({ options, value, onChange, className = "", id, ariaLabel }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -31,6 +31,7 @@ export default function CustomSelect({ options, value, onChange, className = "",
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-label={ariaLabel}
       >
         <span>{selectedOption?.label || value}</span>
         <span className="arrow"></span>

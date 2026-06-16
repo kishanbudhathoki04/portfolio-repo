@@ -180,6 +180,7 @@ export default function ApiClient() {
           className="api-method-select"
           value={method}
           onChange={e => setMethod(e.target.value)}
+          aria-label="HTTP Method"
         >
           {methodOptions.map(o => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -194,6 +195,7 @@ export default function ApiClient() {
             value={endpoint}
             onChange={setEndpoint}
             className="api-select-endpoint"
+            ariaLabel="API Endpoint Selection"
           />
         </div>
 

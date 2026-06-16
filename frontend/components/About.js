@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function About({ profileData }) {
   const philosophies = profileData?.core_philosophies || [
     'Break it in development so customers love it in production.',
@@ -21,10 +23,12 @@ export default function About({ profileData }) {
             {/* Left: Photo + identity */}
             <div className="profile-intro-identity">
               <div className="profile-avatar-wrapper">
-                <img
+                <Image
                   src={profileData?.hasPhoto ? '/api/profile-photo' : '/avatar.jpg'}
                   alt={profileData?.name || 'Kishan Budhathoki'}
                   className="profile-avatar-img"
+                  width={120}
+                  height={120}
                   loading="lazy"
                   decoding="async"
                 />
