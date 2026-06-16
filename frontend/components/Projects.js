@@ -21,9 +21,9 @@ export default function Projects({ projectsData }) {
           <div className="projects-carousel">
             {featuredProjects.map((project) => (
               <div key={project.id} className="project-card">
-                {project.photo && (
+                {project.hasPhoto && (
                   <div className="project-img-wrapper">
-                    <img src={project.photo} alt={project.name} className="project-img" loading="lazy" decoding="async" />
+                    <img src={`/api/project-photo?id=${project.id}`} alt={project.name} className="project-img" loading="lazy" decoding="async" />
                   </div>
                 )}
                 <div className="project-content">

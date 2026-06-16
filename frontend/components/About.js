@@ -22,7 +22,7 @@ export default function About({ profileData }) {
             <div className="profile-intro-identity">
               <div className="profile-avatar-wrapper">
                 <img
-                  src={profileData?.photo || '/avatar.jpg'}
+                  src={profileData?.hasPhoto ? '/api/profile-photo' : '/avatar.jpg'}
                   alt={profileData?.name || 'Kishan Budhathoki'}
                   className="profile-avatar-img"
                   loading="lazy"

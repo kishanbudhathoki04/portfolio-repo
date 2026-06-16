@@ -41,9 +41,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable}`}>
-      <head>
-        <meta charSet="utf-8" />
-      </head>
       <body>
         <div className="glow-bg">
           <div className="glow-orb orb-1"></div>
