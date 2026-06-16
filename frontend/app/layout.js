@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata = {
   metadataBase: new URL('https://kishanbudhathoki.com.np'),
-  title: 'Kishan Budhathoki | Quality Assurance',
+  title: 'Kishan Budhathoki | Software Quality Assurance',
   description: 'QA Engineer specializing in manual testing, API testing, Automation testing and software quality assurance to ensure reliable and bug-free applications.',
   keywords: ['QA', 'Quality Assurance', 'Manual Testing', 'API Automation', 'Kishan Budhathoki', 'Software Testing', 'Nepal'],
   openGraph: {
