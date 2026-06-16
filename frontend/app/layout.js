@@ -42,6 +42,9 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: '/favicon.png',
   }
 };
 
