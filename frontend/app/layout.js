@@ -21,7 +21,7 @@ export const metadata = {
   description: 'QA Engineer specializing in manual testing, API testing, Automation testing and software quality assurance to ensure reliable and bug-free applications.',
   keywords: ['QA', 'Quality Assurance', 'Manual Testing', 'API Automation', 'Kishan Budhathoki', 'Software Testing', 'Nepal'],
   openGraph: {
-    title: 'Kishan Budhathoki | Professional QA Engineer',
+    title: 'Kishan Budhathoki | Software Quality Assurance',
     description: 'Expert in manual auditing, API testing, and ensuring stable software deliveries.',
     url: 'https://kishanbudhathoki.com.np',
     siteName: 'Kishan Budhathoki Portfolio',
