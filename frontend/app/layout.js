@@ -18,13 +18,20 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata = {
   metadataBase: new URL('https://kishanbudhathoki.com.np'),
   title: 'Kishan Budhathoki | Quality Assurance',
-  description: 'Professional Quality Assurance Engineer specializing in manual testing, user experience integrity, and API automation.',
+  description: 'QA Engineer specializing in manual testing, API testing, Automation testing and software quality assurance to ensure reliable and bug-free applications.',
   keywords: ['QA', 'Quality Assurance', 'Manual Testing', 'API Automation', 'Kishan Budhathoki', 'Software Testing', 'Nepal'],
   openGraph: {
     title: 'Kishan Budhathoki | Professional QA Engineer',
     description: 'Expert in manual auditing, API testing, and ensuring stable software deliveries.',
     url: 'https://kishanbudhathoki.com.np',
     siteName: 'Kishan Budhathoki Portfolio',
+    images: [
+      {
+        url: '/uploads/1781340323600-Kishan_Png.png',
+        width: 1200,
+        height: 630,
+      }
+    ],
     type: 'website',
   },
   twitter: {
