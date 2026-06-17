@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
+// When NEXT_PUBLIC_API_URL is set (Vercel production), the browser calls the
+// Render backend DIRECTLY — skipping the Vercel proxy completely.
+// Locally, it falls back to '' so relative /api/... paths use the Next.js proxy.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
 export default function AdminPage() {
   const [token, setToken] = useState(null);
 
@@ -69,10 +74,10 @@ export default function AdminPage() {
   const loadData = async () => {
     try {
       const [profileRes, skillsRes, expRes, projRes] = await Promise.all([
-        fetch('/api/profile?include_details=true'),
-        fetch('/api/skills?include_details=true'),
-        fetch('/api/experience'),
-        fetch('/api/projects?include_photos=true')
+        fetch(`${API_BASE}/api/profile?include_details=true`),
+        fetch(`${API_BASE}/api/skills?include_details=true`),
+        fetch(`${API_BASE}/api/experience`),
+        fetch(`${API_BASE}/api/projects?include_photos=true`)
       ]);
 
       if (profileRes.status === 401 || skillsRes.status === 401) {
@@ -101,7 +106,7 @@ export default function AdminPage() {
     e.preventDefault();
     setAuthMsg("");
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch(`${API_BASE}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -124,7 +129,7 @@ export default function AdminPage() {
     e.preventDefault();
     setAuthMsg("");
     try {
-      const res = await fetch("/api/admin/forgot-password", {
+      const res = await fetch(`${API_BASE}/api/admin/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -147,7 +152,7 @@ export default function AdminPage() {
     e.preventDefault();
     setAuthMsg("");
     try {
-      const res = await fetch("/api/admin/reset-password", {
+      const res = await fetch(`${API_BASE}/api/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: resetToken, newPassword })
@@ -190,7 +195,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/upload", {
+      const res = await fetch(`${API_BASE}/api/admin/upload`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -219,7 +224,7 @@ export default function AdminPage() {
   const saveProfile = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/profile", {
+      const res = await fetch(`${API_BASE}/api/profile`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -244,7 +249,7 @@ export default function AdminPage() {
   const saveSkills = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/skills", {
+      const res = await fetch(`${API_BASE}/api/skills`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -285,7 +290,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const isNew = !editingExp.id;
-      const url = "/api/experience";
+      const url = `${API_BASE}/api/experience`;
       const method = isNew ? "POST" : "PUT";
 
       const res = await fetch(url, {
@@ -322,7 +327,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/experience?id=${id}`, {
+      const res = await fetch(`${API_BASE}/api/experience?id=${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -379,7 +384,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const isNew = !editingProject.id;
-      const url = "/api/projects";
+      const url = `${API_BASE}/api/projects`;
       const method = isNew ? "POST" : "PUT";
 
       const res = await fetch(url, {
@@ -416,7 +421,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/projects?id=${id}`, {
+      const res = await fetch(`${API_BASE}/api/projects?id=${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -446,7 +451,7 @@ export default function AdminPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/upload", {
+      const res = await fetch(`${API_BASE}/api/admin/upload`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
