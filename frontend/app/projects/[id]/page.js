@@ -1,5 +1,20 @@
 import ClientProjectDetailPage from './ClientProjectDetailPage';
 
+export async function generateStaticParams() {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+  try {
+    const res = await fetch(`${backendUrl}/api/projects`);
+    if (!res.ok) return [];
+    
+    const projects = await res.json();
+    return projects.map((p) => ({
+      id: String(p.id)
+    }));
+  } catch (err) {
+    return [];
+  }
+}
+
 export default async function ProjectDetailPage({ params }) {
   const { id } = params;
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
@@ -17,7 +32,14 @@ export default async function ProjectDetailPage({ params }) {
     
     if (projRes.ok) {
       const projectsData = await projRes.json();
-      project = projectsData.find(p => String(p.id) === String(id));
+      const found = projectsData.find((p) => String(p.id) === String(id));
+      if (found) {
+        project = {
+          ...found,
+          hasPhoto: found.hasPhoto || !!found.photo, // Just in case cache is outdated
+          photo: undefined
+        };
+      }
     }
   } catch (err) {
     console.warn('[CMS] Could not reach backend API from server for project details.', err.message);
