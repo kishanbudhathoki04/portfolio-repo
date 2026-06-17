@@ -122,11 +122,19 @@ export class DbService implements OnModuleInit {
   }
 
   // ─────────── Core read/write ───────────
+  // In-memory cache: MongoDB is only queried once after cold start.
+  // Every write (writeSection / writeDB) clears the cache immediately,
+  // so the next read always gets fresh data from MongoDB.
+  private cache: any = null;
+
   async readDB(): Promise<any> {
     try {
+      if (this.cache) return this.cache;
+
       const doc = await this.appStoreModel.findOne({ storeId: this.STORE_ID }).lean().exec();
       if (doc) {
         const { _id, __v, storeId, ...data } = doc as any;
+        this.cache = data;
         return data;
       }
       return {};
@@ -136,7 +144,8 @@ export class DbService implements OnModuleInit {
     }
   }
 
-  // Writes ONLY the top-level key that changed (e.g. 'profile', 'projects') for speed.
+  // Writes ONLY the changed section (e.g. 'profile', 'projects') for speed.
+  // Clears cache so next readDB fetches fresh data.
   async writeSection(section: string, value: any): Promise<boolean> {
     try {
       await this.appStoreModel.updateOne(
@@ -144,6 +153,7 @@ export class DbService implements OnModuleInit {
         { $set: { [section]: value } },
         { upsert: true }
       );
+      this.cache = null; // invalidate — next read pulls fresh from MongoDB
       return true;
     } catch (error) {
       console.error(`Error writing section '${section}' to MongoDB:`, error);
@@ -159,6 +169,7 @@ export class DbService implements OnModuleInit {
         { $set: data },
         { upsert: true }
       );
+      this.cache = null; // invalidate
       return true;
     } catch (error) {
       console.error('Error writing to MongoDB:', error);
@@ -166,4 +177,5 @@ export class DbService implements OnModuleInit {
     }
   }
 }
+
 

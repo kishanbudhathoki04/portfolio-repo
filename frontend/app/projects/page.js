@@ -1,7 +1,6 @@
 import ClientProjectsPage from './ClientProjectsPage';
 
-// Always fetch fresh data — never serve a stale cached build from Vercel
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProjectsServerPage() {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
@@ -11,8 +10,8 @@ export default async function ProjectsServerPage() {
 
   try {
     const [profileRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' })
+      fetch(`${backendUrl}/api/profile`),
+      fetch(`${backendUrl}/api/projects`)
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;

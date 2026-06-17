@@ -1,8 +1,9 @@
 import ClientHome from './ClientHome';
 import { redirect } from 'next/navigation';
 
-// Always fetch fresh data — never serve a stale cached build from Vercel
-export const dynamic = 'force-dynamic';
+// ISR: Vercel caches the rendered page for 60s, then regenerates in background.
+// CMS updates are visible within ~60 seconds. Public visitors always get fast cached HTML.
+export const revalidate = 60;
 
 export default async function Home() {
   if (process.env.APP_MODE === 'cms') {
@@ -18,10 +19,10 @@ export default async function Home() {
 
   try {
     const [profileRes, skillsRes, expRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile?include_details=true`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/skills?include_details=true`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/experience`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/profile?include_details=true`),
+      fetch(`${backendUrl}/api/skills?include_details=true`),
+      fetch(`${backendUrl}/api/experience`),
+      fetch(`${backendUrl}/api/projects`),
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;

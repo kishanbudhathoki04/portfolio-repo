@@ -1,7 +1,6 @@
 import ClientProjectDetailPage from './ClientProjectDetailPage';
 
-// Always fetch fresh data — never pre-bake static project pages
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProjectDetailPage({ params }) {
   const { id } = await params;
@@ -12,8 +11,8 @@ export default async function ProjectDetailPage({ params }) {
 
   try {
     const [profileRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' })
+      fetch(`${backendUrl}/api/profile`),
+      fetch(`${backendUrl}/api/projects`)
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;
