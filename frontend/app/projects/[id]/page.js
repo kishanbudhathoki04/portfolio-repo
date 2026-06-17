@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
@@ -70,9 +71,11 @@ export default function ProjectDetailPage() {
               
               {project.photo && (
                 <div style={{ width: '100%', marginBottom: '40px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', padding: '20px' }}>
-                  <img 
+                  <Image 
                     src={project.photo} 
-                    alt={project.name} 
+                    alt={project.name || "Project photo"} 
+                    width={800}
+                    height={600}
                     style={{ maxWidth: '100%', maxHeight: '600px', objectFit: 'contain', borderRadius: '8px' }} 
                   />
                 </div>

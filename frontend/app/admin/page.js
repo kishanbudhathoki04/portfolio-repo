@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function AdminPage() {
   const [token, setToken] = useState(null);
@@ -1128,7 +1129,7 @@ export default function AdminPage() {
                 <div className="image-upload-wrapper">
                   <div className="image-preview-circle">
                     {profile.photo ? (
-                      <img src={profile.photo} alt="Avatar Preview" className="image-preview-img" />
+                      <Image src={profile.photo} alt="Avatar Preview" className="image-preview-img" width={100} height={100} style={{ objectFit: 'cover' }} />
                     ) : (
                       <span className="no-preview">No Photo</span>
                     )}
@@ -1597,7 +1598,7 @@ export default function AdminPage() {
                             </h4>
                             <p className="exp-item-desc" style={{ marginTop: '8px' }}>{proj.description}</p>
                             {proj.photo && (
-                              <img src={proj.photo} alt={proj.name} style={{ marginTop: '12px', height: '60px', borderRadius: '4px' }} />
+                              <Image src={proj.photo} alt={proj.name || "Preview"} width={100} height={60} style={{ marginTop: '12px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
                             )}
                           </div>
                           <div className="exp-item-actions">
@@ -1623,7 +1624,7 @@ export default function AdminPage() {
                     <div className="image-upload-wrapper">
                       <div className="image-preview-circle" style={{ borderRadius: '8px', width: '120px', height: '80px' }}>
                         {editingProject.photo ? (
-                          <img src={editingProject.photo} alt="Preview" className="image-preview-img" style={{ borderRadius: '8px' }} />
+                          <Image src={editingProject.photo} alt="Preview" className="image-preview-img" width={120} height={80} style={{ borderRadius: '8px', objectFit: 'cover', width: '100%', height: '100%' }} />
                         ) : (
                           <div className="no-preview">No<br />Photo</div>
                         )}

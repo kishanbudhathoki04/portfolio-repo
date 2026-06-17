@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
@@ -56,7 +57,7 @@ export default function AllProjectsPage() {
                 <div key={project.id} className="project-card glass-card">
                   {project.photo && (
                     <div className="project-img-wrapper" style={{ height: '220px' }}>
-                      <img src={project.photo} alt={project.name} className="project-img" />
+                      <Image src={project.photo} alt={project.name || "Project photo"} width={500} height={300} className="project-img" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                     </div>
                   )}
                   <div className="project-content">
