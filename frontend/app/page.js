@@ -1,6 +1,9 @@
 import ClientHome from './ClientHome';
 import { redirect } from 'next/navigation';
 
+// Always fetch fresh data — never serve a stale cached build from Vercel
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   if (process.env.APP_MODE === 'cms') {
     redirect('/admin');
@@ -15,10 +18,10 @@ export default async function Home() {
 
   try {
     const [profileRes, skillsRes, expRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile?include_details=true`, { next: { revalidate: 0 } }),
-      fetch(`${backendUrl}/api/skills?include_details=true`, { next: { revalidate: 0 } }),
-      fetch(`${backendUrl}/api/experience`, { next: { revalidate: 0 } }),
-      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 0 } }),
+      fetch(`${backendUrl}/api/profile?include_details=true`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/skills?include_details=true`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/experience`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' }),
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;

@@ -2,93 +2,131 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AppStore, AppStoreDocument } from './schemas/app-store.schema';
+import { v2 as cloudinary } from 'cloudinary';
+import * as streamifier from 'streamifier';
 
 @Injectable()
 export class DbService implements OnModuleInit {
-  // We use a fixed document ID to represent the entire JSON store
   private readonly STORE_ID = 'singleton-db-store';
-  private cache: any = null;
+  // NOTE: No in-memory cache — removed because it caused stale data on the website.
+  // MongoDB reads are fast enough on Atlas with the targeted lean() queries.
 
   constructor(
     @InjectModel(AppStore.name) private appStoreModel: Model<AppStoreDocument>,
   ) {}
 
   async onModuleInit() {
+    // Configure Cloudinary ONCE at startup so every upload uses production credentials
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    console.log('[Cloudinary] Configured with cloud:', process.env.CLOUDINARY_CLOUD_NAME);
+
     try {
       const existing = await this.appStoreModel.findOne({ storeId: this.STORE_ID });
       if (!existing) {
-        console.log('MongoDB collection empty. Initializing empty Mongoose instance.');
+        console.log('MongoDB collection empty. Initializing empty store.');
         await this.appStoreModel.create({ storeId: this.STORE_ID });
       } else {
         console.log('MongoDB successfully connected & store verified.');
-        // Run migration for Base64 Images
-        await this.migrateBase64Images(existing);
       }
     } catch (err) {
       console.error('Failed connecting to MongoDB or initializing store:', err.message);
     }
   }
 
-  private async migrateBase64Images(doc: any) {
+  // ─────────── Cloudinary upload helper ───────────
+  async uploadBufferToCloudinary(buffer: Buffer, folder = 'portfolio'): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder, resource_type: 'image' },
+        (error, result) => {
+          if (result) resolve(result.secure_url);
+          else reject(error);
+        }
+      );
+      streamifier.createReadStream(buffer).pipe(stream);
+    });
+  }
+
+  // ─────────── Migrate legacy /api/images/:id blobs → Cloudinary ───────────
+  // Call POST /api/admin/migrate-to-cloudinary to run this once.
+  async migrateAllImagesToCloudinary(): Promise<{ migrated: number; errors: number }> {
+    let migrated = 0;
+    let errors = 0;
+
+    const doc = await this.appStoreModel.findOne({ storeId: this.STORE_ID }).lean().exec() as any;
+    if (!doc) return { migrated, errors };
+
+    const { _id, __v, storeId, ...data } = doc;
     let modified = false;
-    const data = doc.toObject ? doc.toObject() : doc;
-    
-    // Migrate Projects
+
+    // Migrate project photos
     if (data.projects && Array.isArray(data.projects)) {
-      for (let p of data.projects) {
-        if (p.photo && p.photo.startsWith('data:image')) {
-          console.log(`Migrating project photo for ${p.id}...`);
-          const url = await this.saveImageFromBase64(p.photo);
-          p.photo = `/api/images/${url}`;
-          modified = true;
+      for (const p of data.projects) {
+        if (p.photo && p.photo.startsWith('/api/images/')) {
+          const imgId = p.photo.replace('/api/images/', '');
+          try {
+            const imgDoc = await this.appStoreModel.findOne({ storeId: imgId, isImage: true }).lean().exec() as any;
+            if (imgDoc && imgDoc.base64Data) {
+              const buffer = Buffer.from(imgDoc.base64Data, 'base64');
+              const cloudUrl = await this.uploadBufferToCloudinary(buffer);
+              p.photo = cloudUrl;
+              console.log(`[Migration] Project ${p.id} photo → ${cloudUrl}`);
+              migrated++;
+              modified = true;
+            }
+          } catch (err) {
+            console.error(`[Migration] Failed to migrate project ${p.id}:`, err.message);
+            errors++;
+          }
         }
       }
     }
 
-    // Migrate Profile Photo
-    if (data.photo && data.photo.startsWith('data:image')) {
-      console.log(`Migrating profile photo...`);
-      const url = await this.saveImageFromBase64(data.photo);
-      data.photo = `/api/images/${url}`;
-      modified = true;
+    // Migrate profile photo (stored at data.profile.photo)
+    if (data.profile && data.profile.photo && data.profile.photo.startsWith('/api/images/')) {
+      const imgId = data.profile.photo.replace('/api/images/', '');
+      try {
+        const imgDoc = await this.appStoreModel.findOne({ storeId: imgId, isImage: true }).lean().exec() as any;
+        if (imgDoc && imgDoc.base64Data) {
+          const buffer = Buffer.from(imgDoc.base64Data, 'base64');
+          const cloudUrl = await this.uploadBufferToCloudinary(buffer);
+          data.profile.photo = cloudUrl;
+          console.log(`[Migration] Profile photo → ${cloudUrl}`);
+          migrated++;
+          modified = true;
+        }
+      } catch (err) {
+        console.error('[Migration] Failed to migrate profile photo:', err.message);
+        errors++;
+      }
     }
 
     if (modified) {
-      console.log('Migration complete. Updating core document...');
-      await this.appStoreModel.updateOne({ storeId: this.STORE_ID }, { $set: data });
+      await this.appStoreModel.updateOne(
+        { storeId: this.STORE_ID },
+        { $set: data }
+      );
+      console.log(`[Migration] Complete. Migrated ${migrated}, errors: ${errors}`);
     }
+
+    return { migrated, errors };
   }
 
-  async saveImageFromBase64(dataUrl: string): Promise<string> {
-    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) return null;
-    return this.saveImage(matches[2], matches[1]);
-  }
-
-  async saveImage(base64Data: string, mimeType: string): Promise<string> {
-    const id = `img-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    await this.appStoreModel.create({
-      storeId: id,
-      base64Data,
-      mimeType,
-      isImage: true
-    });
-    return id;
-  }
-
+  // ─────────── Legacy image blob retrieval (kept for existing /api/images/:id URLs) ───────────
   async getImage(id: string): Promise<any> {
     return this.appStoreModel.findOne({ storeId: id, isImage: true }).lean().exec();
   }
 
+  // ─────────── Core read/write ───────────
   async readDB(): Promise<any> {
     try {
-      if (this.cache) return this.cache;
-
       const doc = await this.appStoreModel.findOne({ storeId: this.STORE_ID }).lean().exec();
       if (doc) {
-        // Strip out MongoDB specific fields to keep the rest of the app unaware
         const { _id, __v, storeId, ...data } = doc as any;
-        this.cache = data;
         return data;
       }
       return {};
@@ -98,15 +136,29 @@ export class DbService implements OnModuleInit {
     }
   }
 
+  // Writes ONLY the top-level key that changed (e.g. 'profile', 'projects') for speed.
+  async writeSection(section: string, value: any): Promise<boolean> {
+    try {
+      await this.appStoreModel.updateOne(
+        { storeId: this.STORE_ID },
+        { $set: { [section]: value } },
+        { upsert: true }
+      );
+      return true;
+    } catch (error) {
+      console.error(`Error writing section '${section}' to MongoDB:`, error);
+      return false;
+    }
+  }
+
+  // Legacy full-document write — kept for backward compatibility
   async writeDB(data: any): Promise<boolean> {
     try {
-      // Upsert the document
       await this.appStoreModel.updateOne(
         { storeId: this.STORE_ID },
         { $set: data },
         { upsert: true }
       );
-      this.cache = data;
       return true;
     } catch (error) {
       console.error('Error writing to MongoDB:', error);
@@ -114,3 +166,4 @@ export class DbService implements OnModuleInit {
     }
   }
 }
+

@@ -46,15 +46,12 @@ export class SkillsController {
   ) {
     try {
       const db = await this.dbService.readDB();
-      db.skills = {
-        ...db.skills,
-        ...body
-      };
-      await this.dbService.writeDB(db);
+      const updatedSkills = { ...db.skills, ...body };
+      await this.dbService.writeSection('skills', updatedSkills);
       return res.status(HttpStatus.OK).json({
         success: true,
         message: "Skills updated successfully",
-        skills: db.skills,
+        skills: updatedSkills,
         timestamp: new Date().toISOString()
       });
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Headers, Query, Res, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Query, Res, HttpStatus, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { DbService } from '../db/db.service';
 import { AuthGuard } from '../admin/auth.guard';
@@ -11,8 +11,6 @@ export class ProjectsController {
   async getProjects() {
     const db = await this.dbService.readDB();
     const projects = db.projects || [];
-    // Now that photos are stored as lightning-fast string URLs instead of Base64 blobs,
-    // we can return the entire payload without causing bandwidth issues or memory crashes.
     return projects.map((p: any) => ({ ...p, hasPhoto: !!p.photo }));
   }
 
@@ -22,7 +20,6 @@ export class ProjectsController {
     @Body() body: any,
     @Res() res: Response
   ) {
-
     try {
       const db = await this.dbService.readDB();
       const projects = db.projects || [];
@@ -36,8 +33,7 @@ export class ProjectsController {
       };
 
       projects.push(newItem);
-      db.projects = projects;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('projects', projects);
 
       return res.status(HttpStatus.CREATED).json({ success: true, item: newItem });
     } catch (error) {
@@ -51,7 +47,6 @@ export class ProjectsController {
     @Body() body: any,
     @Res() res: Response
   ) {
-
     try {
       if (!body.id) {
         return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing item ID' });
@@ -73,8 +68,7 @@ export class ProjectsController {
         featured: body.featured !== undefined ? body.featured : projects[index].featured
       };
 
-      db.projects = projects;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('projects', projects);
 
       return res.status(HttpStatus.OK).json({ success: true, item: projects[index] });
     } catch (error) {
@@ -88,7 +82,6 @@ export class ProjectsController {
     @Query('id') id: string,
     @Res() res: Response
   ) {
-
     try {
       if (!id) {
         return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing item ID' });
@@ -103,8 +96,7 @@ export class ProjectsController {
       }
 
       projects.splice(index, 1);
-      db.projects = projects;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('projects', projects);
 
       return res.status(HttpStatus.OK).json({ success: true, message: 'Project deleted successfully' });
     } catch (error) {

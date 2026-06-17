@@ -1,31 +1,19 @@
 import ClientProjectDetailPage from './ClientProjectDetailPage';
 
-export async function generateStaticParams() {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-  try {
-    const res = await fetch(`${backendUrl}/api/projects`);
-    if (!res.ok) return [];
-    
-    const projects = await res.json();
-    return projects.map((p) => ({
-      id: String(p.id)
-    }));
-  } catch (err) {
-    return [];
-  }
-}
+// Always fetch fresh data — never pre-bake static project pages
+export const dynamic = 'force-dynamic';
 
 export default async function ProjectDetailPage({ params }) {
-  const { id } = params;
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+  const { id } = await params;
+  const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:3001';
 
   let profileData = null;
   let project = null;
 
   try {
     const [profileRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile`, { next: { revalidate: 3600 } }),
-      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 3600 } })
+      fetch(`${backendUrl}/api/profile`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' })
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;

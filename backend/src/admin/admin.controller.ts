@@ -1,14 +1,16 @@
-import { Controller, Post, Body, Headers, Res, HttpStatus, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { AdminService } from './admin.service';
+import { DbService } from '../db/db.service';
 import { AuthGuard } from './auth.guard';
-import { v2 as cloudinary } from 'cloudinary';
-import * as streamifier from 'streamifier';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly dbService: DbService,
+  ) {}
 
   @Post('login')
   async login(@Body() body: any, @Res() res: Response) {
@@ -59,6 +61,7 @@ export class AdminController {
     }
   }
 
+  // Upload image → Cloudinary. Cloudinary is already configured once at startup in db.service.
   @UseGuards(AuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
@@ -71,32 +74,31 @@ export class AdminController {
     }
 
     try {
-      cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
-      });
+      const cloudUrl = await this.dbService.uploadBufferToCloudinary(file.buffer);
+      return res.status(HttpStatus.OK).json({ success: true, url: cloudUrl });
+    } catch (error) {
+      console.error('[Upload] Cloudinary upload failed:', error.message);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+  }
 
-      const uploadResult: any = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'portfolio' },
-          (error, result) => {
-            if (result) {
-              resolve(result);
-            } else {
-              reject(error);
-            }
-          }
-        );
-        streamifier.createReadStream(file.buffer).pipe(stream);
-      });
-
+  // One-time migration: converts all /api/images/:id blobs in MongoDB → Cloudinary URLs.
+  // Call this once from Postman or curl after deployment:
+  //   POST https://your-backend.onrender.com/api/admin/migrate-to-cloudinary
+  //   Authorization: Bearer <your_token>
+  @UseGuards(AuthGuard)
+  @Post('migrate-to-cloudinary')
+  async migrateToCloudinary(@Res() res: Response) {
+    try {
+      const result = await this.dbService.migrateAllImagesToCloudinary();
       return res.status(HttpStatus.OK).json({
         success: true,
-        url: uploadResult.secure_url
+        message: `Migration complete. ${result.migrated} image(s) migrated, ${result.errors} error(s).`,
+        ...result
       });
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error.message });
+      console.error('[Migration] Error:', error.message);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, error: error.message });
     }
   }
 }

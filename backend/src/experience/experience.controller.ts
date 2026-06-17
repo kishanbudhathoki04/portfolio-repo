@@ -19,7 +19,6 @@ export class ExperienceController {
     @Body() body: any,
     @Res() res: Response
   ) {
-
     try {
       const db = await this.dbService.readDB();
       const experience = db.experience || [];
@@ -34,8 +33,7 @@ export class ExperienceController {
       };
 
       experience.push(newItem);
-      db.experience = experience;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('experience', experience);
 
       return res.status(HttpStatus.CREATED).json({ success: true, item: newItem });
     } catch (error) {
@@ -49,7 +47,6 @@ export class ExperienceController {
     @Body() body: any,
     @Res() res: Response
   ) {
-
     try {
       if (!body.id) {
         return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing item ID' });
@@ -72,8 +69,7 @@ export class ExperienceController {
         bullets: body.bullets !== undefined ? body.bullets : experience[index].bullets
       };
 
-      db.experience = experience;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('experience', experience);
 
       return res.status(HttpStatus.OK).json({ success: true, item: experience[index] });
     } catch (error) {
@@ -87,7 +83,6 @@ export class ExperienceController {
     @Query('id') id: string,
     @Res() res: Response
   ) {
-
     try {
       if (!id) {
         return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Missing item ID' });
@@ -102,8 +97,7 @@ export class ExperienceController {
       }
 
       experience.splice(index, 1);
-      db.experience = experience;
-      await this.dbService.writeDB(db);
+      await this.dbService.writeSection('experience', experience);
 
       return res.status(HttpStatus.OK).json({ success: true, message: 'Experience deleted successfully' });
     } catch (error) {

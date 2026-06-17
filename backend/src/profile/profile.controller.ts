@@ -42,15 +42,12 @@ export class ProfileController {
   ) {
     try {
       const db = await this.dbService.readDB();
-      db.profile = {
-        ...db.profile,
-        ...body
-      };
-      await this.dbService.writeDB(db);
+      const updatedProfile = { ...db.profile, ...body };
+      await this.dbService.writeSection('profile', updatedProfile);
       return res.status(HttpStatus.OK).json({
         success: true,
         message: "Profile updated successfully",
-        profile: db.profile,
+        profile: updatedProfile,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
