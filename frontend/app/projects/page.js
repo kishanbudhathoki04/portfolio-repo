@@ -14,12 +14,7 @@ export default async function ProjectsServerPage() {
 
     profileData = profileRes.ok ? await profileRes.json() : null;
     if (projRes.ok) {
-      const rawProjects = await projRes.json();
-      projectsData = rawProjects.map(p => ({
-        ...p,
-        hasPhoto: p.hasPhoto || !!p.photo,
-        photo: undefined
-      }));
+      projectsData = await projRes.json();
     }
   } catch (err) {
     console.warn('[CMS] Could not reach backend API from server for projects page.', err.message);

@@ -34,10 +34,10 @@ export default function ClientProjectDetailPage({ profileData, project }) {
             <div className="project-detail glass-card" style={{ padding: '40px', borderRadius: '16px' }}>
               <h1 style={{ fontSize: '2.5rem', marginBottom: '20px', color: 'var(--text-main)', letterSpacing: '-0.02em', fontWeight: '800' }}>{project.name}</h1>
               
-              {project.hasPhoto && (
+              {project.photo && (
                 <div style={{ width: '100%', marginBottom: '40px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)', display: 'flex', justifyContent: 'center', padding: '20px' }}>
                   <Image 
-                    src={`/api/project-photo?id=${project.id}`} 
+                    src={project.photo} 
                     alt={project.name || "Project photo"} 
                     width={1200}
                     height={800}

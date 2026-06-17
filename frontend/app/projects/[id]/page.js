@@ -32,14 +32,7 @@ export default async function ProjectDetailPage({ params }) {
     
     if (projRes.ok) {
       const projectsData = await projRes.json();
-      const found = projectsData.find((p) => String(p.id) === String(id));
-      if (found) {
-        project = {
-          ...found,
-          hasPhoto: found.hasPhoto || !!found.photo, // Just in case cache is outdated
-          photo: undefined
-        };
-      }
+      project = projectsData.find((p) => String(p.id) === String(id));
     }
   } catch (err) {
     console.warn('[CMS] Could not reach backend API from server for project details.', err.message);

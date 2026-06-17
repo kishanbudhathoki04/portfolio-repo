@@ -22,9 +22,9 @@ export default function Projects({ projectsData }) {
           <div className="projects-carousel">
             {featuredProjects.map((project) => (
               <div key={project.id} className="project-card">
-                {project.hasPhoto && (
+                {project.photo && (
                   <div className="project-img-wrapper">
-                    <Image src={`/api/project-photo?id=${project.id}`} alt={project.name} className="project-img" width={800} height={600} loading="lazy" decoding="async" />
+                    <Image src={project.photo} alt={project.name} className="project-img" width={800} height={600} loading="lazy" decoding="async" />
                   </div>
                 )}
                 <div className="project-content">

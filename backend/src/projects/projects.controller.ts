@@ -8,17 +8,11 @@ export class ProjectsController {
   constructor(private readonly dbService: DbService) {}
 
   @Get()
-  async getProjects(@Query('include_photos') includePhotos: string) {
+  async getProjects() {
     const db = await this.dbService.readDB();
     const projects = db.projects || [];
-
-    if (includePhotos !== 'true') {
-      return projects.map((p: any) => {
-        const { photo, ...rest } = p;
-        return { ...rest, hasPhoto: !!photo };
-      });
-    }
-
+    // Now that photos are stored as lightning-fast string URLs instead of Base64 blobs,
+    // we can return the entire payload without causing bandwidth issues or memory crashes.
     return projects.map((p: any) => ({ ...p, hasPhoto: !!p.photo }));
   }
 

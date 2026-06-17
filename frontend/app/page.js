@@ -32,14 +32,7 @@ export default async function Home() {
       delete profileData.photo;
     }
 
-    if (projectsData && projectsData.length > 0) {
-      projectsData = projectsData.map(p => {
-        if (p.photo) {
-          return { ...p, hasPhoto: true, photo: undefined };
-        }
-        return p;
-      });
-    }
+    // Obsolete Base64 mapping logic removed since backend now parses URLs.
 
     if (expData && expData.length === 0) {
       expData = null; // matching original logic

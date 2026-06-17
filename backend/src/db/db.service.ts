@@ -21,10 +21,63 @@ export class DbService implements OnModuleInit {
         await this.appStoreModel.create({ storeId: this.STORE_ID });
       } else {
         console.log('MongoDB successfully connected & store verified.');
+        // Run migration for Base64 Images
+        await this.migrateBase64Images(existing);
       }
     } catch (err) {
       console.error('Failed connecting to MongoDB or initializing store:', err.message);
     }
+  }
+
+  private async migrateBase64Images(doc: any) {
+    let modified = false;
+    const data = doc.toObject ? doc.toObject() : doc;
+    
+    // Migrate Projects
+    if (data.projects && Array.isArray(data.projects)) {
+      for (let p of data.projects) {
+        if (p.photo && p.photo.startsWith('data:image')) {
+          console.log(`Migrating project photo for ${p.id}...`);
+          const url = await this.saveImageFromBase64(p.photo);
+          p.photo = `/api/images/${url}`;
+          modified = true;
+        }
+      }
+    }
+
+    // Migrate Profile Photo
+    if (data.photo && data.photo.startsWith('data:image')) {
+      console.log(`Migrating profile photo...`);
+      const url = await this.saveImageFromBase64(data.photo);
+      data.photo = `/api/images/${url}`;
+      modified = true;
+    }
+
+    if (modified) {
+      console.log('Migration complete. Updating core document...');
+      await this.appStoreModel.updateOne({ storeId: this.STORE_ID }, { $set: data });
+    }
+  }
+
+  async saveImageFromBase64(dataUrl: string): Promise<string> {
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return null;
+    return this.saveImage(matches[2], matches[1]);
+  }
+
+  async saveImage(base64Data: string, mimeType: string): Promise<string> {
+    const id = `img-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    await this.appStoreModel.create({
+      storeId: id,
+      base64Data,
+      mimeType,
+      isImage: true
+    });
+    return id;
+  }
+
+  async getImage(id: string): Promise<any> {
+    return this.appStoreModel.findOne({ storeId: id, isImage: true }).lean().exec();
   }
 
   async readDB(): Promise<any> {

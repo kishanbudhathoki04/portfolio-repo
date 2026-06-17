@@ -71,11 +71,20 @@ export class AdminController {
     try {
       const base64Data = file.buffer.toString('base64');
       const mimeType = file.mimetype;
-      const dataUrl = `data:${mimeType};base64,${base64Data}`;
+      
+      const dbService = (this.adminService as any).dbService; // Cast to access if protected
+      let url = '';
+
+      if (dbService && typeof dbService.saveImage === 'function') {
+        const imageId = await dbService.saveImage(base64Data, mimeType);
+        url = `/api/images/${imageId}`;
+      } else {
+        url = `data:${mimeType};base64,${base64Data}`; // Fallback if dbService fails
+      }
 
       return res.status(HttpStatus.OK).json({
         success: true,
-        url: dataUrl
+        url: url
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error.message });
