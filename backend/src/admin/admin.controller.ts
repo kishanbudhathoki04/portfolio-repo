@@ -3,6 +3,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { AdminService } from './admin.service';
 import { AuthGuard } from './auth.guard';
+import { v2 as cloudinary } from 'cloudinary';
+import * as streamifier from 'streamifier';
 
 @Controller('admin')
 export class AdminController {
@@ -69,22 +71,29 @@ export class AdminController {
     }
 
     try {
-      const base64Data = file.buffer.toString('base64');
-      const mimeType = file.mimetype;
-      
-      const dbService = (this.adminService as any).dbService; // Cast to access if protected
-      let url = '';
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+      });
 
-      if (dbService && typeof dbService.saveImage === 'function') {
-        const imageId = await dbService.saveImage(base64Data, mimeType);
-        url = `/api/images/${imageId}`;
-      } else {
-        url = `data:${mimeType};base64,${base64Data}`; // Fallback if dbService fails
-      }
+      const uploadResult: any = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'portfolio' },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        streamifier.createReadStream(file.buffer).pipe(stream);
+      });
 
       return res.status(HttpStatus.OK).json({
         success: true,
-        url: url
+        url: uploadResult.secure_url
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error.message });
