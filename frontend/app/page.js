@@ -15,10 +15,10 @@ export default async function Home() {
 
   try {
     const [profileRes, skillsRes, expRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile?include_details=true`, { next: { revalidate: 3600 } }),
-      fetch(`${backendUrl}/api/skills?include_details=true`, { next: { revalidate: 3600 } }),
-      fetch(`${backendUrl}/api/experience`, { next: { revalidate: 3600 } }),
-      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 3600 } }),
+      fetch(`${backendUrl}/api/profile?include_details=true`, { next: { revalidate: 0 } }),
+      fetch(`${backendUrl}/api/skills?include_details=true`, { next: { revalidate: 0 } }),
+      fetch(`${backendUrl}/api/experience`, { next: { revalidate: 0 } }),
+      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 0 } }),
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;
@@ -26,13 +26,7 @@ export default async function Home() {
     expData = expRes.ok ? await expRes.json() : null;
     projectsData = projRes.ok ? await projRes.json() : [];
 
-    // Strip photo base64 strings to reduce Next.js HTML serialization payload size
-    if (profileData && profileData.photo) {
-      profileData.hasPhoto = true;
-      delete profileData.photo;
-    }
-
-    // Obsolete Base64 mapping logic removed since backend now parses URLs.
+    // (Legacy photo base64 stripping removed because photos are now fast Cloudinary URLs)
 
     if (expData && expData.length === 0) {
       expData = null; // matching original logic

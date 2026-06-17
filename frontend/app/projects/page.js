@@ -8,8 +8,8 @@ export default async function ProjectsServerPage() {
 
   try {
     const [profileRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile`, { next: { revalidate: 3600 } }),
-      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 3600 } })
+      fetch(`${backendUrl}/api/profile`, { next: { revalidate: 0 } }),
+      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 0 } })
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;
