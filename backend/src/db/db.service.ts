@@ -7,6 +7,7 @@ import { AppStore, AppStoreDocument } from './schemas/app-store.schema';
 export class DbService implements OnModuleInit {
   // We use a fixed document ID to represent the entire JSON store
   private readonly STORE_ID = 'singleton-db-store';
+  private cache: any = null;
 
   constructor(
     @InjectModel(AppStore.name) private appStoreModel: Model<AppStoreDocument>,
@@ -28,10 +29,13 @@ export class DbService implements OnModuleInit {
 
   async readDB(): Promise<any> {
     try {
+      if (this.cache) return this.cache;
+
       const doc = await this.appStoreModel.findOne({ storeId: this.STORE_ID }).lean().exec();
       if (doc) {
         // Strip out MongoDB specific fields to keep the rest of the app unaware
         const { _id, __v, storeId, ...data } = doc as any;
+        this.cache = data;
         return data;
       }
       return {};
@@ -49,6 +53,7 @@ export class DbService implements OnModuleInit {
         { $set: data },
         { upsert: true }
       );
+      this.cache = data;
       return true;
     } catch (error) {
       console.error('Error writing to MongoDB:', error);

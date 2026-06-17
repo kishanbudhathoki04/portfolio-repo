@@ -72,7 +72,7 @@ export default function AdminPage() {
         fetch('/api/profile?include_details=true'),
         fetch('/api/skills?include_details=true'),
         fetch('/api/experience'),
-        fetch('/api/projects')
+        fetch('/api/projects?include_photos=true')
       ]);
 
       if (profileRes.status === 401 || skillsRes.status === 401) {

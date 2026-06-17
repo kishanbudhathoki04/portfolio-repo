@@ -15,10 +15,10 @@ export default async function Home() {
 
   try {
     const [profileRes, skillsRes, expRes, projRes] = await Promise.all([
-      fetch(`${backendUrl}/api/profile?include_details=true`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/skills?include_details=true`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/experience`, { cache: 'no-store' }),
-      fetch(`${backendUrl}/api/projects`, { cache: 'no-store' }),
+      fetch(`${backendUrl}/api/profile?include_details=true`, { next: { revalidate: 3600 } }),
+      fetch(`${backendUrl}/api/skills?include_details=true`, { next: { revalidate: 3600 } }),
+      fetch(`${backendUrl}/api/experience`, { next: { revalidate: 3600 } }),
+      fetch(`${backendUrl}/api/projects`, { next: { revalidate: 3600 } }),
     ]);
 
     profileData = profileRes.ok ? await profileRes.json() : null;

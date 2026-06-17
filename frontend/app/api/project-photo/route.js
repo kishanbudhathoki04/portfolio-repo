@@ -11,7 +11,7 @@ export async function GET(request) {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
   
   try {
-    const res = await fetch(`${backendUrl}/api/projects`, { cache: 'no-store' });
+    const res = await fetch(`${backendUrl}/api/projects`, { next: { revalidate: 86400 } });
     const data = await res.json();
     
     const project = data.find(p => String(p.id) === String(id));

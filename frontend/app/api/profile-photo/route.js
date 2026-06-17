@@ -4,7 +4,7 @@ export async function GET(request) {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
   
   try {
-    const res = await fetch(`${backendUrl}/api/profile?include_details=true`, { cache: 'no-store' });
+    const res = await fetch(`${backendUrl}/api/profile?include_details=true`, { next: { revalidate: 86400 } });
     const data = await res.json();
     
     if (data?.photo) {

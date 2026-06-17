@@ -8,9 +8,18 @@ export class ProjectsController {
   constructor(private readonly dbService: DbService) {}
 
   @Get()
-  async getProjects() {
+  async getProjects(@Query('include_photos') includePhotos: string) {
     const db = await this.dbService.readDB();
-    return db.projects || [];
+    const projects = db.projects || [];
+
+    if (includePhotos !== 'true') {
+      return projects.map((p: any) => {
+        const { photo, ...rest } = p;
+        return { ...rest, hasPhoto: !!photo };
+      });
+    }
+
+    return projects.map((p: any) => ({ ...p, hasPhoto: !!p.photo }));
   }
 
   @UseGuards(AuthGuard)
