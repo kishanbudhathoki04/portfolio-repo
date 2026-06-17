@@ -7,6 +7,15 @@ export type AppStoreDocument = AppStore & Document;
 export class AppStore {
   @Prop()
   storeId: string;
+
+  @Prop()
+  base64Data?: string;
+
+  @Prop()
+  mimeType?: string;
+
+  @Prop()
+  isImage?: boolean;
 }
 
 export const AppStoreSchema = SchemaFactory.createForClass(AppStore);
