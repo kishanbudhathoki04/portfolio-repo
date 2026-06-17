@@ -27,7 +27,7 @@ export const metadata = {
     siteName: 'Kishan Budhathoki Portfolio',
     images: [
       {
-        url: '/uploads/1781340323600-Kishan_Png.png',
+        url: '/uploads/Kishan.jpeg',
         width: 1200,
         height: 630,
       }
