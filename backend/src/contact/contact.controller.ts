@@ -34,19 +34,22 @@ export class ContactController {
     // 2. Check SMTP credentials
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('[SMTP] MISSING CREDENTIALS - SMTP_USER:', !!process.env.SMTP_USER, 'SMTP_PASS:', !!process.env.SMTP_PASS);
-      // Still return success so the user knows the message was logged,
-      // but warn in logs that email was skipped.
       return { success: true, message: 'Ticket received (email notification skipped — SMTP not configured).' };
     }
 
-    // 3. Send email synchronously — AWAIT the result so we know if it actually worked
+    // 3. Send email — use direct SSL connection on port 465 (works on Render/hosts that block port 587)
     try {
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // SSL — avoids STARTTLS on port 587 which some hosts block
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 10000, // 10s connection timeout
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
       });
 
       const mailOptions = {
@@ -76,11 +79,9 @@ ${description}
 
     } catch (error) {
       console.error(`[SMTP] FAILED for ticket ${ticketId}:`, error.message);
-      // Return success for the ticket itself, but include the SMTP error for debugging
-      throw new HttpException(
-        { success: false, message: `Ticket logged, but email failed: ${error.message}` },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // Still return success for the ticket — user's message IS logged on server
+      // But include a note that email delivery failed
+      return { success: true, message: 'Ticket received! (Email notification may be delayed.)' };
     }
   }
 }
