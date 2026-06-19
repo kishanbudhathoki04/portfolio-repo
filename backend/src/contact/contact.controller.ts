@@ -22,8 +22,8 @@ export class ContactController {
     console.log(`Description: \n${description}\n---------------------------------------\n`);
 
     // 3. Process SMTP asynchronously in the background if configured
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn('[SMTP] No credentials found. Email notification skipped for ticket:', ticketId);
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.warn('[SMTP] No credentials found (SMTP_USER / SMTP_PASS). Email notification skipped for ticket:', ticketId);
       return;
     }
 
@@ -31,13 +31,13 @@ export class ContactController {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
         },
       });
 
       const mailOptions = {
-        from: `"${reporter}" <${process.env.EMAIL_USER}>`,
+        from: `"${reporter}" <${process.env.SMTP_USER}>`,
         replyTo: email,
         to: 'kishanbudhathoki04@gmail.com',
         subject: `New QA Ticket [${severity}]: ${summary}`,
