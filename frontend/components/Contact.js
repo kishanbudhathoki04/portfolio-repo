@@ -32,7 +32,7 @@ export default function Contact() {
     e.preventDefault();
     setIsLoading(true);
 
-    const randomId = `SB-QA-${Math.floor(Math.random() * 8999 + 1000)}`;
+    const randomId = `KB-QA-${Math.floor(Math.random() * 8999 + 1000)}`;
 
     try {
       const res = await fetch('/api/contact', {

@@ -22,7 +22,6 @@ export class AppController {
       status: "QA Engine Active",
       version: "1.0.0",
       engineer: "Kishan Budhathoki",
-      environment: process.env.NODE_ENV || "development",
       timestamp: new Date().toISOString(),
       system_health: "Optimal"
     };
