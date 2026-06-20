@@ -42,7 +42,7 @@ export default function ClientProjectDetailPage({ profileData, project }) {
                     width={1200}
                     height={800}
                     priority
-                    style={{ maxWidth: '100%', maxHeight: '600px', objectFit: 'contain', borderRadius: '8px' }} 
+                    style={{ width: '100%', height: 'auto', maxHeight: '600px', objectFit: 'contain', borderRadius: '8px' }} 
                   />
                 </div>
               )}

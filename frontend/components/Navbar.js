@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function Navbar({ profileData }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,16 +19,16 @@ export default function Navbar({ profileData }) {
   return (
     <header>
       <div className="nav-container">
-        <a href="#" className="logo" onClick={closeMenu}>
+        <Link href="/" className="logo" onClick={closeMenu}>
           <span className="logo-tag">&lt;</span>{logoName}<span className="logo-tag"> /&gt;</span>
-        </a>
+        </Link>
         <nav className={`nav-menu ${isOpen ? 'active' : ''}`}>
-          <a href="#about" className="nav-link" onClick={closeMenu}>About</a>
-          <a href="#projects" className="nav-link" onClick={closeMenu}>Project Showcase</a>
-          <a href="#skills" className="nav-link" onClick={closeMenu}>Skills</a>
-          <a href="#interactive-lab" className="nav-link" onClick={closeMenu}>QA Lab</a>
-          <a href="#experience" className="nav-link" onClick={closeMenu}>Experience</a>
-          <a href="#contact" className="nav-link btn-secondary-nav" onClick={closeMenu}>Log an Issue(Contact)</a>
+          <Link href="/#about" className="nav-link" onClick={closeMenu}>About</Link>
+          <Link href="/#projects" className="nav-link" onClick={closeMenu}>Project Showcase</Link>
+          <Link href="/#skills" className="nav-link" onClick={closeMenu}>Skills</Link>
+          <Link href="/#interactive-lab" className="nav-link" onClick={closeMenu}>QA Lab</Link>
+          <Link href="/#experience" className="nav-link" onClick={closeMenu}>Experience</Link>
+          <Link href="/#contact" className="nav-link btn-secondary-nav" onClick={closeMenu}>Log an Issue(Contact)</Link>
         </nav>
         <div className="nav-right">
           <button
