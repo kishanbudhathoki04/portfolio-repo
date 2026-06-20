@@ -16,6 +16,18 @@ export class AppController {
     return { status: 'OK' };
   }
 
+  @Get('kishan')
+  getKishanStatus(): any {
+    return {
+      status: "QA Engine Active",
+      version: "1.0.0",
+      engineer: "Kishan Budhathoki",
+      environment: process.env.NODE_ENV || "development",
+      timestamp: new Date().toISOString(),
+      system_health: "Optimal"
+    };
+  }
+
   @Get('api/images/:id')
   async getImage(@Param('id') id: string, @Res() res: Response) {
     try {
