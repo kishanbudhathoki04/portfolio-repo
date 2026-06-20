@@ -2,12 +2,12 @@ import { Injectable, OnModuleInit, UnauthorizedException, InternalServerErrorExc
 import { DbService } from '../db/db.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import * as nodemailer from 'nodemailer';
 import * as crypto from 'crypto';
+import { Resend } from 'resend';
 
 @Injectable()
 export class AdminService implements OnModuleInit {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend | null = null;
 
   constructor(
     private readonly dbService: DbService,
@@ -20,19 +20,12 @@ export class AdminService implements OnModuleInit {
   }
 
   private setupMailer() {
-    // If SMTP_USER is set in .env, use real transport, else use fallback logic
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-      console.log('[Mailer] SMTP credentials found. Real emails will be sent.');
+    if (process.env.RESEND_API_KEY) {
+      this.resend = new Resend(process.env.RESEND_API_KEY);
+      console.log('[Mailer] Resend API key found. Real emails will be sent via HTTPS.');
     } else {
-      console.warn('[Mailer] No SMTP_USER configured. Reset emails will be printed to console only.');
-      this.transporter = null;
+      console.warn('[Mailer] No RESEND_API_KEY configured. Reset emails will be printed to console only.');
+      this.resend = null;
     }
   }
 
@@ -96,16 +89,19 @@ export class AdminService implements OnModuleInit {
 
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin?resetToken=${rawToken}`;
 
-    if (this.transporter) {
-      const mailOptions = {
-        from: `Admin Portal <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: 'Password Reset Request',
-        text: `You requested a password reset. Please click on the link to reset your password: \n\n${resetLink}\n\nThis link will expire in 1 hour.`,
-      };
-
+    if (this.resend) {
       try {
-        await this.transporter.sendMail(mailOptions);
+        const { error } = await this.resend.emails.send({
+          from: 'Admin Portal <onboarding@resend.dev>',
+          to: [email],
+          subject: 'Password Reset Request',
+          text: `You requested a password reset. Please click on the link to reset your password: \n\n${resetLink}\n\nThis link will expire in 1 hour.`,
+        });
+
+        if (error) {
+          console.error('[Mailer] Resend error:', error);
+          throw new InternalServerErrorException('Failed to send reset email');
+        }
         console.log(`[Mailer] Reset email successfully sent to ${email}`);
       } catch (err) {
         console.error('[Mailer] Error sending email:', err.message);
