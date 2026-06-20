@@ -38,7 +38,7 @@ export default function ClientProjectsPage({ profileData, projectsData }) {
                 <div key={project.id} className="project-card glass-card">
                   {project.photo && (
                     <div className="project-img-wrapper" style={{ height: '220px' }}>
-                      <Image src={project.photo} alt={project.name || "Project photo"} width={500} height={300} className="project-img" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                      <Image src={project.photo} alt={project.name || "Project photo"} width={500} height={300} className="project-img" style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
                     </div>
                   )}
                   <div className="project-content">
